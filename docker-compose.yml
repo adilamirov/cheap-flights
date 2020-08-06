@@ -1,0 +1,39 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_DB: flights
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    expose:
+      - "5432"
+    networks:
+      backend:
+        aliases:
+          - postgres
+
+  api:
+    build:
+      context: .
+    command: ["python", "-m", "app"]
+    environment:
+      DATABASE_URI: postgresql://postgres:postgres@postgres:5432/flights
+      PYTHONPATH: .
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+    ports:
+      - "8080:8080"
+    networks:
+      backend:
+        aliases:
+          - api
+
+networks:
+  backend:
+    name: backend
